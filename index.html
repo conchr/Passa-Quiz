@@ -1,1 +1,440 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Παιχνίδι Γνώσεων: Η Γέφυρα του Πασσά</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #f5e8c8; /* Papyrus color */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .quiz-card {
+            max-width: 700px;
+            width: 100%;
+            min-height: 500px;
+            background-color: #f8f3e6; /* Light papyrus */
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e0d5b8;
+        }
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #8B4513, #CD853F, #8B4513);
+        }
+        .option-button {
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid #d4c4a8;
+            position: relative;
+            overflow: hidden;
+            background-color: #f8f3e6;
+        }
+        .option-button:hover:not(.correct):not(.incorrect) {
+            background-color: #f1e9d7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            background-color: #4caf50 !important;
+            border-color: #388e3c !important;
+            color: white !important;
+            animation: pulse-correct 0.5s 1;
+        }
+        .incorrect {
+            background-color: #f44336 !important;
+            border-color: #d32f2f !important;
+            color: white !important;
+            animation: shake 0.5s 1;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e0d5b8;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #8B4513, #CD853F);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        .navigation-buttons button {
+            padding: 0.6rem 1.2rem;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .center-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .button-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        @keyframes pulse-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        @media (max-width: 640px) {
+            .quiz-card {
+                padding: 1.5rem;
+            }
+            .navigation-buttons {
+                flex-wrap: nowrap;
+            }
+            .navigation-buttons button {
+                font-size: 0.85rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .navigation-buttons button {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
 
+    <div class="quiz-card">
+        <h1 class="text-3xl font-extrabold text-amber-900 text-center mb-2">
+            Κουίζ Γνώσεων: Η Γέφυρα του Πασσά
+        </h1>
+        <p class="text-center text-amber-800 mb-8">Δοκιμάστε τις γνώσεις σας για αυτό το ιστορικό μνημείο</p>
+
+        <div id="quiz-screen">
+            <div class="flex justify-between items-center mb-4">
+                <p id="question-number" class="text-lg font-semibold text-amber-800">Ερώτηση 1 / 14</p>
+                <div class="score-display bg-amber-200 text-amber-900 px-3 py-1 rounded-full font-bold">
+                    🏆 Σκορ: <span id="current-score">0</span>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div id="progress" class="progress"></div>
+            </div>
+            
+            <p id="question-text" class="text-2xl font-bold text-amber-900 mb-8"></p>
+
+            <div id="options-container" class="space-y-4">
+                <!-- Τα κουμπιά επιλογών θα φορτωθούν εδώ -->
+            </div>
+
+            <div id="feedback" class="mt-6 text-center font-bold text-xl h-8"></div>
+            
+            <div class="navigation-buttons">
+                <button id="prev-button" class="bg-amber-700 text-white hover:bg-amber-800" onclick="prevQuestion()">
+                    Προηγούμενη
+                </button>
+                <button id="next-button" class="bg-amber-700 text-white hover:bg-amber-800" onclick="nextQuestion()">
+                    Επόμενη
+                </button>
+            </div>
+            
+            <div class="center-button">
+                <button id="home-button" class="bg-amber-900 text-white hover:bg-amber-950 py-2 px-4 rounded-lg" onclick="goToHomePage()">
+                    Κεντρική Σελίδα
+                </button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden text-center">
+            <h2 class="text-4xl font-extrabold text-amber-800 mb-4">Τέλος του Κουίζ!</h2>
+            <p class="text-xl text-amber-700 mb-2">Το σκορ σας:</p>
+            <p id="final-score" class="text-6xl font-extrabold text-amber-900 mb-4"></p>
+            <div id="result-message" class="text-2xl mb-8"></div>
+            
+            <div class="navigation-buttons">
+                <button class="bg-amber-700 text-white hover:bg-amber-800 w-full" onclick="restartQuiz()">
+                    Παίξτε Ξανά
+                </button>
+            </div>
+            
+            <div class="center-button mt-4">
+                <button class="bg-amber-900 text-white hover:bg-amber-950 py-2 px-4 rounded-lg" onclick="goToHomePage()">
+                    Κεντρική Σελίδα
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ερωτήσεις (14 στο σύνολο - αφαιρέθηκε η ερώτηση 15)
+        const questions = [
+            {
+                q: "Ποιο είναι το επίσημο όνομα της Γέφυρας του Πασσά;",
+                options: ["Γέφυρα του Αχιλλέα", "Πολύτοξη Γέφυρα του Ενιπέα", "Γέφυρα του Πηνειού", "Γέφυρα της Λάρισας"],
+                answer: "Πολύτοξη Γέφυρα του Ενιπέα"
+            },
+            {
+                q: "Σε ποιο έτος ολοκληρώθηκε η αρχική κατασκευή της γέφυρας;",
+                options: ["1897", "1752", "1650", "1923"],
+                answer: "1752"
+            },
+            {
+                q: "Ποιος Οθωμανός διοικητής διέταξε την κατασκευή της;",
+                options: ["Αλή Πασάς", "Μουσταφά Πασάς", "Αχμέτ Ραμίτ Πασάς", "Σουλεϊμάν Πασάς"],
+                answer: "Αχμέτ Ραμίτ Πασάς"
+            },
+            {
+                q: "Ποιο ποτάμι γεφυρώνει η Γέφυρα του Πασσά;",
+                options: ["Πηνειός", "Σπερχειός", "Απιδανός", "Ενιπέας"],
+                answer: "Ενιπέας"
+            },
+            {
+                q: "Ποιο είναι το συνολικό μήκος της γέφυρας;",
+                options: ["περίπου 50 μέτρα", "περίπου 80 μέτρα", "περίπου 110 μέτρα", "περίπου 150 μέτρα"],
+                answer: "περίπου 110 μέτρα"
+            },
+            {
+                q: "Πόσα ανισομεγέθη τόξα διαθέτει η γέφυρα;",
+                options: ["5", "7", "9", "12"],
+                answer: "7"
+            },
+            {
+                q: "Σε ποια ιστορική περίοδο ανήκει η αρχική της κατασκευή;",
+                options: ["Βυζαντινή Περίοδος", "Ρωμαϊκή Εποχή", "Οθωμανική Περίοδος", "Νεοελληνικό Κράτος"],
+                answer: "Οθωμανική Περίοδος"
+            },
+            {
+                q: "Μέχρι πότε περίπου χρησιμοποιούνταν η γέφυρα για την κύρια κυκλοφορία οχημάτων;",
+                options: ["Μέχρι το 1950", "Μέχρι τη δεκαετία του '90", "Μέχρι το 2010", "Μέχρι το 1850"],
+                answer: "Μέχρι τη δεκαετία του '90"
+            },
+            {
+                q: "Ποιο άλλο όνομα, εκτός από Γέφυρα του Πασσά και Ενιπέα, αναφέρεται στις πηγές;",
+                options: ["Γέφυρα της Αμπελιάς", "Γέφυρα Τσιναρλή", "Γέφυρα του Δομοκού", "Γέφυρα της Πύλης"],
+                answer: "Γέφυρα Τσιναρλή"
+            },
+            {
+                q: "Ποιος ήταν ο ρόλος της γέφυρας κατά την περίοδο της λειτουργίας της;",
+                options: ["Ήταν μόνο για πεζούς", "Ήταν σιδηροδρομική γέφυρα", "Ήταν ο κύριος δρόμος σύνδεσης Β. με Ν. Ελλάδα", "Ήταν στρατιωτική εγκατάσταση"],
+                answer: "Ήταν ο κύριος δρόμος σύνδεσης Β. με Ν. Ελλάδα"
+            },
+            {
+                q: "Ποιο είναι το πλάτος της γέφυρας;",
+                options: ["3 μέτρα", "5,5 μέτρα", "8 μέτρα", "10 μέτρα"],
+                answer: "5,5 μέτρα"
+            },
+            {
+                q: "Τι έχει κηρυχθεί η Γέφυρα του Πασσά;",
+                options: ["Αρχαιολογικός χώρος", "Στρατιωτική ζώνη", "Διατηρητέο μνημείο", "Μουσείο"],
+                answer: "Διατηρητέο μνημείο"
+            },
+            {
+                q: "Σε ποιο νομό της Ελλάδας βρίσκεται η γέφυρα;",
+                options: ["Νομός Μαγνησίας", "Νομός Καρδίτσας", "Νομός Λάρισας", "Νομός Τρικάλων"],
+                answer: "Νομός Λάρισας"
+            },
+            {
+                q: "Τι είναι το χαρακτηριστικό του μεγαλύτερου τόξου της γέφυρας;",
+                options: ["Βρίσκεται προς τον βορρά", "Βρίσκεται προς τον νότο", "Έχει πέτρινο στηθαίο", "Είναι το μοναδικό στρογγυλό"],
+                answer: "Βρίσκεται προς τον νότο"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questionAnswered = false;
+
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const questionNumber = document.getElementById('question-number');
+        const feedback = document.getElementById('feedback');
+        const nextButton = document.getElementById('next-button');
+        const prevButton = document.getElementById('prev-button');
+        const finalScore = document.getElementById('final-score');
+        const currentScoreDisplay = document.getElementById('current-score');
+        const resultMessage = document.getElementById('result-message');
+        const progressBar = document.getElementById('progress');
+
+        // Φόρτωση ερώτησης
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showResults();
+                return;
+            }
+
+            questionAnswered = false;
+            feedback.textContent = '';
+            optionsContainer.innerHTML = '';
+
+            const current = questions[currentQuestionIndex];
+            questionNumber.textContent = `Ερώτηση ${currentQuestionIndex + 1} / ${questions.length}`;
+            questionText.textContent = current.q;
+            currentScoreDisplay.textContent = score;
+            
+            // Ενημέρωση μπάρας προόδου
+            const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            current.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'option-button w-full py-3 px-4 rounded-lg text-lg text-amber-900 text-left';
+                button.onclick = () => checkAnswer(button, option, current.answer);
+                optionsContainer.appendChild(button);
+            });
+
+            // Διαχείριση κουμπιών πλοήγησης
+            updateNavigationButtons();
+        }
+
+        // Έλεγχος απάντησης
+        function checkAnswer(selectedButton, selectedOption, correctAnswer) {
+            if (questionAnswered) return;
+            questionAnswered = true;
+
+            const allButtons = optionsContainer.querySelectorAll('.option-button');
+            allButtons.forEach(btn => btn.onclick = null); // Απενεργοποίηση όλων των κουμπιών
+
+            if (selectedOption === correctAnswer) {
+                selectedButton.classList.add('correct');
+                feedback.textContent = 'Σωστό! 🎉';
+                feedback.className = 'mt-6 text-center font-bold text-xl h-8 text-green-700';
+                score++;
+                currentScoreDisplay.textContent = score;
+            } else {
+                selectedButton.classList.add('incorrect');
+                feedback.textContent = 'Λάθος! 😞';
+                feedback.className = 'mt-6 text-center font-bold text-xl h-8 text-red-700';
+                // Βρες και τονίσε τη σωστή απάντηση
+                allButtons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            // Ενημέρωση κουμπιών πλοήγησης μετά την απάντηση
+            updateNavigationButtons();
+        }
+
+        // Ενημέρωση κατάστασης κουμπιών πλοήγησης
+        function updateNavigationButtons() {
+            // Προηγούμενη ερώτηση - ενεργοποιημένη μόνο αν δεν είμαστε στην πρώτη ερώτηση
+            if (currentQuestionIndex === 0) {
+                prevButton.classList.add('button-disabled');
+                prevButton.disabled = true;
+            } else {
+                prevButton.classList.remove('button-disabled');
+                prevButton.disabled = false;
+            }
+            
+            // Επόμενη ερώτηση - ενεργοποιημένη μόνο αν έχει απαντηθεί η τρέχουσα ερώτηση
+            // ή αν είμαστε στην τελευταία ερώτηση
+            if (questionAnswered || currentQuestionIndex === questions.length - 1) {
+                nextButton.classList.remove('button-disabled');
+                nextButton.disabled = false;
+                
+                // Αλλαγή κειμένου για την τελευταία ερώτηση
+                if (currentQuestionIndex === questions.length - 1) {
+                    nextButton.textContent = 'Τέλος';
+                } else {
+                    nextButton.textContent = 'Επόμενη';
+                }
+            } else {
+                nextButton.classList.add('button-disabled');
+                nextButton.disabled = true;
+            }
+        }
+
+        // Επόμενη ερώτηση
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                // Αν είμαστε στην τελευταία ερώτηση, πηγαίνουμε στα αποτελέσματα
+                showResults();
+            }
+        }
+
+        // Προηγούμενη ερώτηση
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // Εμφάνιση αποτελεσμάτων
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            finalScore.textContent = `${score} / ${questions.length}`;
+            
+            // Προσθήκη μηνύματος με βάση το σκορ
+            const percentage = (score / questions.length) * 100;
+            if (percentage === 100) {
+                resultMessage.textContent = 'Εξαιρετικά! Έχετε άριστη γνώση! 🏆';
+                resultMessage.className = 'text-2xl mb-8 text-green-700';
+            } else if (percentage >= 70) {
+                resultMessage.textContent = 'Πολύ καλά! Μπορείτε να βελτιωθείτε ακόμα περισσότερο! 👍';
+                resultMessage.className = 'text-2xl mb-8 text-amber-700';
+            } else if (percentage >= 50) {
+                resultMessage.textContent = 'Καλά! Χρειάζεστε λίγη ακόμα μελέτη! 📚';
+                resultMessage.className = 'text-2xl mb-8 text-yellow-700';
+            } else {
+                resultMessage.textContent = 'Χρειάζεστε περισσότερη μελέτη της παρουσίασης! 📖';
+                resultMessage.className = 'text-2xl mb-8 text-red-700';
+            }
+        }
+
+        // Επανεκκίνηση
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // Μετάβαση στην κεντρική σελίδα
+        function goToHomePage() {
+            window.location.href = 'https://conchr.github.io/Farsala-Center-Page/';
+        }
+
+        // Εκκίνηση του παιχνιδιού
+        loadQuestion();
+    </script>
+</body>
+</html>
