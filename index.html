@@ -15,19 +15,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 0.5rem;
+            margin: 0;
         }
         .quiz-card {
             max-width: 700px;
             width: 100%;
-            min-height: 500px;
+            max-height: 95vh;
             background-color: #f8f3e6; /* Light papyrus */
-            padding: 2.5rem;
-            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 1rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
             border: 1px solid #e0d5b8;
+            display: flex;
+            flex-direction: column;
         }
         .quiz-card::before {
             content: '';
@@ -35,7 +38,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 5px;
+            height: 4px;
             background: linear-gradient(90deg, #8B4513, #CD853F, #8B4513);
         }
         .option-button {
@@ -45,6 +48,9 @@
             position: relative;
             overflow: hidden;
             background-color: #f8f3e6;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s forwards;
         }
         .option-button:hover:not(.correct):not(.incorrect) {
             background-color: #f1e9d7;
@@ -64,11 +70,11 @@
             animation: shake 0.5s 1;
         }
         .progress-bar {
-            height: 8px;
+            height: 6px;
             background-color: #e0d5b8;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
-            margin: 1.5rem 0;
+            margin: 1rem 0;
         }
         .progress {
             height: 100%;
@@ -79,26 +85,31 @@
         .navigation-buttons {
             display: flex;
             justify-content: space-between;
-            margin-top: 2rem;
-            gap: 1rem;
+            margin-top: 1rem;
+            gap: 0.5rem;
         }
         .navigation-buttons button {
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             font-weight: bold;
             border-radius: 0.5rem;
             transition: all 0.3s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             flex: 1;
             min-width: 0;
         }
         .center-button {
             display: flex;
             justify-content: center;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
         .button-disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 0.5rem;
         }
         @keyframes pulse-correct {
             0% { transform: scale(1); }
@@ -110,22 +121,41 @@
             20%, 60% { transform: translateX(-5px); }
             40%, 80% { transform: translateX(5px); }
         }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         @media (max-width: 640px) {
             .quiz-card {
-                padding: 1.5rem;
+                padding: 1rem;
+                max-height: 98vh;
             }
             .navigation-buttons {
                 flex-wrap: nowrap;
             }
             .navigation-buttons button {
-                font-size: 0.85rem;
-                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
             }
         }
         @media (max-width: 480px) {
+            .quiz-card {
+                padding: 0.75rem;
+            }
             .navigation-buttons button {
-                font-size: 0.8rem;
-                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+                padding: 0.35rem 0.7rem;
+            }
+        }
+        @media (max-height: 700px) {
+            .quiz-card {
+                max-height: 98vh;
+                padding: 1rem;
+            }
+            .content-area {
+                padding-bottom: 0.25rem;
             }
         }
     </style>
@@ -133,30 +163,31 @@
 <body>
 
     <div class="quiz-card">
-        <h1 class="text-3xl font-extrabold text-amber-900 text-center mb-2">
-            Κουίζ Γνώσεων: Η Γέφυρα του Πασσά
-        </h1>
-        <p class="text-center text-amber-800 mb-8">Δοκιμάστε τις γνώσεις σας για αυτό το ιστορικό μνημείο</p>
+        <div class="mb-2">
+            <h1 class="text-2xl font-extrabold text-amber-900 text-center mb-1">
+                Κουίζ Γνώσεων: Η Γέφυρα του Πασσά
+            </h1>
+            <p class="text-center text-amber-800 text-sm mb-4">Δοκιμάστε τις γνώσεις σας για αυτό το ιστορικό μνημείο</p>
+        </div>
 
         <div id="quiz-screen">
-            <div class="flex justify-between items-center mb-4">
-                <p id="question-number" class="text-lg font-semibold text-amber-800">Ερώτηση 1 / 14</p>
-                <div class="score-display bg-amber-200 text-amber-900 px-3 py-1 rounded-full font-bold">
-                    🏆 Σκορ: <span id="current-score">0</span>
-                </div>
+            <div class="mb-2">
+                <p id="question-number" class="text-base font-semibold text-amber-800">Ερώτηση 1 / 14</p>
             </div>
             
             <div class="progress-bar">
                 <div id="progress" class="progress"></div>
             </div>
             
-            <p id="question-text" class="text-2xl font-bold text-amber-900 mb-8"></p>
+            <div class="content-area">
+                <p id="question-text" class="text-xl font-bold text-amber-900 mb-4"></p>
 
-            <div id="options-container" class="space-y-4">
-                <!-- Τα κουμπιά επιλογών θα φορτωθούν εδώ -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Τα κουμπιά επιλογών θα φορτωθούν εδώ -->
+                </div>
+
+                <div id="feedback" class="mt-4 text-center font-bold text-lg h-7"></div>
             </div>
-
-            <div id="feedback" class="mt-6 text-center font-bold text-xl h-8"></div>
             
             <div class="navigation-buttons">
                 <button id="prev-button" class="bg-amber-700 text-white hover:bg-amber-800" onclick="prevQuestion()">
@@ -168,17 +199,17 @@
             </div>
             
             <div class="center-button">
-                <button id="home-button" class="bg-amber-900 text-white hover:bg-amber-950 py-2 px-4 rounded-lg" onclick="goToHomePage()">
+                <button id="home-button" class="bg-amber-900 text-white hover:bg-amber-950 py-1 px-3 rounded-lg text-sm" onclick="goToHomePage()">
                     Κεντρική Σελίδα
                 </button>
             </div>
         </div>
 
         <div id="result-screen" class="hidden text-center">
-            <h2 class="text-4xl font-extrabold text-amber-800 mb-4">Τέλος του Κουίζ!</h2>
-            <p class="text-xl text-amber-700 mb-2">Το σκορ σας:</p>
-            <p id="final-score" class="text-6xl font-extrabold text-amber-900 mb-4"></p>
-            <div id="result-message" class="text-2xl mb-8"></div>
+            <h2 class="text-3xl font-extrabold text-amber-800 mb-3">Τέλος του Κουίζ!</h2>
+            <p class="text-lg text-amber-700 mb-1">Το σκορ σας:</p>
+            <p id="final-score" class="text-5xl font-extrabold text-amber-900 mb-3"></p>
+            <div id="result-message" class="text-xl mb-6"></div>
             
             <div class="navigation-buttons">
                 <button class="bg-amber-700 text-white hover:bg-amber-800 w-full" onclick="restartQuiz()">
@@ -186,8 +217,8 @@
                 </button>
             </div>
             
-            <div class="center-button mt-4">
-                <button class="bg-amber-900 text-white hover:bg-amber-950 py-2 px-4 rounded-lg" onclick="goToHomePage()">
+            <div class="center-button mt-3">
+                <button class="bg-amber-900 text-white hover:bg-amber-950 py-1 px-3 rounded-lg text-sm" onclick="goToHomePage()">
                     Κεντρική Σελίδα
                 </button>
             </div>
@@ -282,9 +313,17 @@
         const nextButton = document.getElementById('next-button');
         const prevButton = document.getElementById('prev-button');
         const finalScore = document.getElementById('final-score');
-        const currentScoreDisplay = document.getElementById('current-score');
         const resultMessage = document.getElementById('result-message');
         const progressBar = document.getElementById('progress');
+
+        // Συνάρτηση για ανάμιξη πίνακα (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
         // Φόρτωση ερώτησης
         function loadQuestion() {
@@ -300,17 +339,26 @@
             const current = questions[currentQuestionIndex];
             questionNumber.textContent = `Ερώτηση ${currentQuestionIndex + 1} / ${questions.length}`;
             questionText.textContent = current.q;
-            currentScoreDisplay.textContent = score;
             
             // Ενημέρωση μπάρας προόδου
             const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
             progressBar.style.width = `${progressPercentage}%`;
 
-            current.options.forEach(option => {
+            // Ανακατέβουμε τις επιλογές
+            const shuffledOptions = shuffleArray([...current.options]);
+            
+            // Δημιουργούμε τα κουμπιά επιλογών αλλά τα κρατάμε κρυφά αρχικά
+            shuffledOptions.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.textContent = option;
-                button.className = 'option-button w-full py-3 px-4 rounded-lg text-lg text-amber-900 text-left';
-                button.onclick = () => checkAnswer(button, option, current.answer);
+                button.className = 'option-button w-full py-2 px-3 rounded-lg text-base text-amber-900 text-left';
+                
+                // Προσθέτουμε καθυστέρηση για κάθε επιλογή
+                setTimeout(() => {
+                    button.style.animationDelay = `${index * 0.2}s`;
+                    button.onclick = () => checkAnswer(button, option, current.answer);
+                }, index * 1000); // 1 δευτερόλεπτο καθυστέρηση μεταξύ εμφάνισης επιλογών
+                
                 optionsContainer.appendChild(button);
             });
 
@@ -329,13 +377,12 @@
             if (selectedOption === correctAnswer) {
                 selectedButton.classList.add('correct');
                 feedback.textContent = 'Σωστό! 🎉';
-                feedback.className = 'mt-6 text-center font-bold text-xl h-8 text-green-700';
+                feedback.className = 'mt-4 text-center font-bold text-lg h-7 text-green-700';
                 score++;
-                currentScoreDisplay.textContent = score;
             } else {
                 selectedButton.classList.add('incorrect');
                 feedback.textContent = 'Λάθος! 😞';
-                feedback.className = 'mt-6 text-center font-bold text-xl h-8 text-red-700';
+                feedback.className = 'mt-4 text-center font-bold text-lg h-7 text-red-700';
                 // Βρες και τονίσε τη σωστή απάντηση
                 allButtons.forEach(btn => {
                     if (btn.textContent === correctAnswer) {
@@ -406,16 +453,16 @@
             const percentage = (score / questions.length) * 100;
             if (percentage === 100) {
                 resultMessage.textContent = 'Εξαιρετικά! Έχετε άριστη γνώση! 🏆';
-                resultMessage.className = 'text-2xl mb-8 text-green-700';
+                resultMessage.className = 'text-xl mb-6 text-green-700';
             } else if (percentage >= 70) {
                 resultMessage.textContent = 'Πολύ καλά! Μπορείτε να βελτιωθείτε ακόμα περισσότερο! 👍';
-                resultMessage.className = 'text-2xl mb-8 text-amber-700';
+                resultMessage.className = 'text-xl mb-6 text-amber-700';
             } else if (percentage >= 50) {
                 resultMessage.textContent = 'Καλά! Χρειάζεστε λίγη ακόμα μελέτη! 📚';
-                resultMessage.className = 'text-2xl mb-8 text-yellow-700';
+                resultMessage.className = 'text-xl mb-6 text-yellow-700';
             } else {
                 resultMessage.textContent = 'Χρειάζεστε περισσότερη μελέτη της παρουσίασης! 📖';
-                resultMessage.className = 'text-2xl mb-8 text-red-700';
+                resultMessage.className = 'text-xl mb-6 text-red-700';
             }
         }
 
