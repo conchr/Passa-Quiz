@@ -58,16 +58,14 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .correct {
-            background-color: #4caf50 !important;
-            border-color: #388e3c !important;
-            color: white !important;
-            animation: pulse-correct 0.5s 1;
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+            color: #065f46 !important;
         }
         .incorrect {
-            background-color: #f44336 !important;
-            border-color: #d32f2f !important;
-            color: white !important;
-            animation: shake 0.5s 1;
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
         }
         .progress-bar {
             height: 6px;
@@ -110,16 +108,6 @@
             flex: 1;
             overflow-y: auto;
             padding-bottom: 0.5rem;
-        }
-        @keyframes pulse-correct {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
         }
         @keyframes fadeInUp {
             to {
@@ -191,10 +179,10 @@
             
             <div class="navigation-buttons">
                 <button id="prev-button" class="bg-amber-700 text-white hover:bg-amber-800" onclick="prevQuestion()">
-                    Προηγούμενη
+                    ← Προηγούμενη
                 </button>
                 <button id="next-button" class="bg-amber-700 text-white hover:bg-amber-800" onclick="nextQuestion()">
-                    Επόμενη
+                    Επόμενη →
                 </button>
             </div>
             
@@ -376,12 +364,12 @@
 
             if (selectedOption === correctAnswer) {
                 selectedButton.classList.add('correct');
-                feedback.textContent = 'Σωστό! 🎉';
+                feedback.textContent = 'Σωστό!';
                 feedback.className = 'mt-4 text-center font-bold text-lg h-7 text-green-700';
                 score++;
             } else {
                 selectedButton.classList.add('incorrect');
-                feedback.textContent = 'Λάθος! 😞';
+                feedback.textContent = 'Λάθος!';
                 feedback.className = 'mt-4 text-center font-bold text-lg h-7 text-red-700';
                 // Βρες και τονίσε τη σωστή απάντηση
                 allButtons.forEach(btn => {
@@ -414,9 +402,9 @@
                 
                 // Αλλαγή κειμένου για την τελευταία ερώτηση
                 if (currentQuestionIndex === questions.length - 1) {
-                    nextButton.textContent = 'Τέλος';
+                    nextButton.textContent = 'Τέλος →';
                 } else {
-                    nextButton.textContent = 'Επόμενη';
+                    nextButton.textContent = 'Επόμενη →';
                 }
             } else {
                 nextButton.classList.add('button-disabled');
@@ -452,16 +440,16 @@
             // Προσθήκη μηνύματος με βάση το σκορ
             const percentage = (score / questions.length) * 100;
             if (percentage === 100) {
-                resultMessage.textContent = 'Εξαιρετικά! Έχετε άριστη γνώση! 🏆';
+                resultMessage.textContent = 'Εξαιρετικά! Έχετε άριστη γνώση!';
                 resultMessage.className = 'text-xl mb-6 text-green-700';
             } else if (percentage >= 70) {
-                resultMessage.textContent = 'Πολύ καλά! Μπορείτε να βελτιωθείτε ακόμα περισσότερο! 👍';
+                resultMessage.textContent = 'Πολύ καλά! Μπορείτε να βελτιωθείτε ακόμα περισσότερο!';
                 resultMessage.className = 'text-xl mb-6 text-amber-700';
             } else if (percentage >= 50) {
-                resultMessage.textContent = 'Καλά! Χρειάζεστε λίγη ακόμα μελέτη! 📚';
+                resultMessage.textContent = 'Καλά! Χρειάζεστε λίγη ακόμα μελέτη!';
                 resultMessage.className = 'text-xl mb-6 text-yellow-700';
             } else {
-                resultMessage.textContent = 'Χρειάζεστε περισσότερη μελέτη της παρουσίασης! 📖';
+                resultMessage.textContent = 'Χρειάζεστε περισσότερη μελέτη της παρουσίασης!';
                 resultMessage.className = 'text-xl mb-6 text-red-700';
             }
         }
@@ -479,6 +467,15 @@
         function goToHomePage() {
             window.location.href = 'https://conchr.github.io/Farsala-Center-Page/';
         }
+
+        // Προσθήκη event listeners για τα βελάκια
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft' && !prevButton.disabled) {
+                prevQuestion();
+            } else if (event.key === 'ArrowRight' && !nextButton.disabled) {
+                nextQuestion();
+            }
+        });
 
         // Εκκίνηση του παιχνιδιού
         loadQuestion();
